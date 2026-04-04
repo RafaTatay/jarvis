@@ -12,7 +12,6 @@ import threading
 import subprocess
 import tempfile
 import webbrowser
-
 import numpy as np
 import sounddevice as sd
 from gtts import gTTS
