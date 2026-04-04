@@ -1,28 +1,60 @@
-# 👏 Jarvis - Double Clap Home Automation
+# Jarvis Clap Detector
 
-Aplaude 2 veces y Jarvis te da la bienvenida, pone música y abre tus apps.
+Da dos palmadas → saludo por voz → suena el tema de Iron Man.
 
-## ¿Qué hace?
-1. Detecta 2 aplausos por el micrófono
-2. Una voz dice **"Bienvenido a casa, señor Tatay"**
-3. Abre YouTube con tu canción
-4. Abre **Claude** y **Cursor** lado a lado
+---
 
-## Instalación
+## Requisitos
+
+- Python 3.10+
+- Micrófono funcional
+
+### Dependencias Python
 
 ```bash
-pip install sounddevice numpy pyttsx3
+pip install sounddevice numpy gtts
 ```
+
+### Dependencia por sistema operativo
+
+| OS | Qué instalar |
+|---|---|
+| **Linux** | `sudo apt install mpg123` |
+| **macOS** | Nada (usa `afplay`, ya incluido) |
+| **Windows** | Nada (usa PowerShell, ya incluido) |
+
+---
+
+## Estructura de archivos
+
+Pon el `.mp3` en la misma carpeta que el script:
+
+```
+welcome.py
+openingIronMan.mp3   ← opcional, si no está abre YouTube
+```
+
+---
 
 ## Uso
 
 ```bash
-python bienvenido_jarvis.py
+python3 welcome.py
 ```
 
-> Si no detecta los aplausos, ajusta `THRESHOLD` en el script (sube el valor si hay ruido, bájalo si no detecta).
+Da **dos palmadas** en menos de 2 segundos.
+Si no encuentra el `.mp3` local, abre automáticamente el vídeo de YouTube.
 
-## Requisitos
-- macOS
-- Python 3.9+
-- Micrófono
+`Ctrl-C` para salir.
+
+---
+
+## Ajustes rápidos
+
+| Variable | Por defecto | Qué controla |
+|---|---|---|
+| `THRESHOLD` | `0.10` | Sensibilidad del micrófono (bajar = más sensible) |
+| `DOUBLE_WINDOW` | `2.0 s` | Tiempo máximo entre las dos palmadas |
+| `COOLDOWN` | `0.1 s` | Tiempo mínimo entre detecciones |
+| `MENSAJE` | `"Bienvenido de nuevo Jefe"` | Texto que dice la voz |
+| `URL_YOUTUBE` | enlace Iron Man | Fallback si no hay `.mp3` |
