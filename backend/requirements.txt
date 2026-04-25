@@ -1,0 +1,11 @@
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+sqlalchemy==2.0.36
+aiosqlite==0.20.0
+anthropic==0.40.0
+python-dotenv==1.0.1
+pydantic==2.10.0
+pydantic-settings==2.6.1
+websockets==13.1
+python-multipart==0.0.18
+httpx==0.28.0
