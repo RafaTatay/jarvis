@@ -2,12 +2,22 @@ import { useEffect, useState } from 'react'
 import { api } from '../../lib/api'
 import ReactMarkdown from 'react-markdown'
 import {
-  Bot, Zap, FileText, Search, Share2, BarChart2, Megaphone,
-  ChevronDown, ChevronUp, Clock, Cpu,
+  Bot, Zap, FileText, Search, Share2, BarChart2, Megaphone, Wrench,
+  ChevronDown, ChevronUp, Clock, Cpu, CheckCircle2, AlertCircle,
 } from 'lucide-react'
 import clsx from 'clsx'
 
 const AGENTS = [
+  {
+    id: 'autonomous',
+    name: 'JARVIS Autonomous',
+    icon: Wrench,
+    color: 'text-mission-cyan',
+    bg: 'bg-mission-cyan/10',
+    border: 'border-mission-cyan/30',
+    description: 'Plans and executes — creates clients, campaigns, tasks, content directly',
+    forms: ['autonomous'],
+  },
   {
     id: 'content_writer',
     name: 'Content Writer',
@@ -68,6 +78,14 @@ function AgentForm({ agentId, onResult }) {
   const set = (k, v) => setFields(f => ({ ...f, [k]: v }))
 
   const FORMS = {
+    autonomous: {
+      label: 'Execute Goal',
+      inputs: [
+        { key: 'goal', label: 'Goal', type: 'textarea', required: true, placeholder: 'e.g. "Onboard a new fitness brand called Pulse Labs and create a 4-week launch campaign with 5 starter tasks"' },
+        { key: 'context', label: 'Context (optional)', type: 'textarea', placeholder: 'Any additional info — brand details, constraints, preferences...' },
+      ],
+      run: () => api.runAutonomous({ goal: fields.goal, context: fields.context || '' }),
+    },
     write_content: {
       label: 'Write Content',
       inputs: [
@@ -355,6 +373,38 @@ export default function AgentConsole({ refreshKey }) {
                     <span>{result.duration_ms}ms</span>
                   </div>
                 </div>
+                {result.actions && result.actions.length > 0 && (
+                  <div className="mb-5 card bg-mission-cyan/5 border-mission-cyan/20">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Wrench size={13} className="text-mission-cyan" />
+                      <span className="text-xs font-semibold text-mission-cyan uppercase tracking-wider">
+                        {result.actions.length} action{result.actions.length === 1 ? '' : 's'} executed
+                      </span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {result.actions.map((a, i) => {
+                        const ok = !(a.result && a.result.error)
+                        return (
+                          <div key={i} className="flex items-start gap-2 text-xs">
+                            {ok
+                              ? <CheckCircle2 size={12} className="text-mission-green shrink-0 mt-0.5" />
+                              : <AlertCircle size={12} className="text-mission-red shrink-0 mt-0.5" />}
+                            <div className="flex-1 min-w-0 font-mono">
+                              <span className="text-mission-cyan">{a.tool}</span>
+                              <span className="text-mission-muted">(</span>
+                              <span className="text-gray-400">
+                                {Object.entries(a.input || {}).map(([k, v]) => `${k}=${typeof v === 'string' && v.length > 30 ? v.slice(0, 30) + '…' : JSON.stringify(v)}`).join(', ')}
+                              </span>
+                              <span className="text-mission-muted">)</span>
+                              {a.result?.id && <span className="text-mission-green ml-2">→ id {a.result.id}</span>}
+                              {a.result?.error && <span className="text-mission-red ml-2">→ {a.result.error}</span>}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
                 <div className="markdown-content prose prose-invert prose-sm max-w-none">
                   <ReactMarkdown>{result.result}</ReactMarkdown>
                 </div>

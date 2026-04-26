@@ -55,4 +55,5 @@ export const api = {
   runContentCalendar: (data) => request('/agents/content-calendar', { method: 'POST', body: JSON.stringify(data) }),
   runAnalyticsInsights: (data) => request('/agents/analytics-insights', { method: 'POST', body: JSON.stringify(data) }),
   runClientReport: (data) => request('/agents/client-report', { method: 'POST', body: JSON.stringify(data) }),
+  runAutonomous: (data) => request('/agents/autonomous', { method: 'POST', body: JSON.stringify(data) }),
 }

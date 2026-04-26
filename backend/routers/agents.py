@@ -7,6 +7,7 @@ from datetime import datetime
 
 from backend.database import get_db
 from backend.models import AgentRun, AgentType, ContentPiece
+from backend.agents.base_agent import run_agent_with_tools
 from backend.agents.content_writer import write_content
 from backend.agents.campaign_strategist import create_campaign_strategy, analyze_campaign_performance
 from backend.agents.seo_agent import keyword_research, audit_content_seo
@@ -78,6 +79,11 @@ class ClientReportRequest(BaseModel):
     client_name: str
     period: str
     campaigns: list[dict]
+
+
+class AutonomousRequest(BaseModel):
+    goal: str
+    context: str = ""
 
 
 async def _save_run(db: AsyncSession, agent_type: AgentType, prompt: str, result: dict) -> AgentRun:
@@ -242,3 +248,28 @@ async def run_client_report(req: ClientReportRequest, db: AsyncSession = Depends
 
     run = await _save_run(db, AgentType.analytics, f"Report: {req.client_name}", result)
     return {"run_id": run.id, "result": result["result"], "tokens_used": result["tokens_used"], "duration_ms": result["duration_ms"]}
+
+
+@router.post("/autonomous")
+async def run_autonomous_agent(req: AutonomousRequest, db: AsyncSession = Depends(get_db)):
+    """Autonomous agent that can read/write the agency database via tools.
+    Give it a high-level goal like 'Onboard a new fitness client and create their first 4-week campaign'."""
+    system_prompt = """You are JARVIS, an autonomous marketing agency operations agent. You have full access to
+the agency database via tools — you can list and create clients, campaigns, tasks, and content, change campaign
+status, and read metrics. When given a goal, plan the steps, execute them by calling tools, and verify your work.
+Be efficient — minimize tool calls, batch where possible. After completing all actions, summarize what you did
+in clean markdown with a bulleted action log."""
+    try:
+        full_prompt = req.goal if not req.context else f"{req.goal}\n\nContext:\n{req.context}"
+        result = await run_agent_with_tools(system_prompt, full_prompt, db)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    run = await _save_run(db, AgentType.campaign_strategist, f"Autonomous: {req.goal[:200]}", result)
+    return {
+        "run_id": run.id,
+        "result": result["result"],
+        "actions": result["actions"],
+        "tokens_used": result["tokens_used"],
+        "duration_ms": result["duration_ms"],
+    }
