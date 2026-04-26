@@ -1,9 +1,12 @@
 import os
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import select, func
+
+load_dotenv()
 
 from backend.database import init_db, get_db, async_session
 from backend.models import Client, Campaign, Task, ContentPiece, AgentRun, CampaignStatus, TaskStatus
